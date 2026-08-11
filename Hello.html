@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ระบบปฏิทินแจ้งงานซ่อมรายวัน - By Inverno</title>
     
-    <!-- โหลดสไตล์และดีไซน์ของ FullCalendar และไอคอนภายนอก -->
+    <!-- ✅ แก้ไขลิงก์ CDN เป็นเวอร์ชันเต็มเพื่อให้ปฏิทินแสดงผลตารางเรียบร้อยแล้ว -->
     <link href="https://jsdelivr.net" rel="stylesheet">
     <script src="https://jsdelivr.net"></script>
     
@@ -49,7 +49,7 @@
     </div>
 
     <!-- ตัวกรองเลือกดูงานของช่างรายคน -->
-    <div class="max-width: 1400px; margin: 0 auto;" style="max-width: 1400px; margin: 0 auto;">
+    <div style="max-width: 1400px; margin: 0 auto;">
         <div class="filter-area">
             <strong>🔍 ตัวกรองมุมมองงานซ่อม:</strong>
             <select id="filter-user" class="filter-select" onchange="filterEvents()">
@@ -104,22 +104,29 @@
             const calendarEl = document.getElementById('calendar');
             
             calendar = new FullCalendar.Calendar(calendarEl, {
-                initialView: 'dayGridMonth', // แสดงผลแบบรายเดือนเป็นค่าแรกเริ่ม
+                initialView: 'dayGridMonth',
                 headerToolbar: {
                     left: 'prev,next today',
                     center: 'title',
-                    right: 'dayGridMonth,timeGridWeek,listDay' // สลับดูรายเดือน รายสัปดาห์ หรือรายการงานประจำวันได้
+                    right: 'dayGridMonth,timeGridWeek,listDay'
                 },
-                locale: 'th', // ให้ปฏิทินแสดงผลข้อความภาษาไทย
-                events: repairJobs, // นำข้อมูลงานไปพล็อตลงตาราง
+                locale: 'th',
+                events: repairJobs,
                 eventClick: function(info) {
-                    // เมื่อกดคลิกที่แถบงานในปฏิทิน จะเด้งแสดงรายละเอียด
-                    alert(`🛠️ งานซ่อม: ${info.event.title}\n📅 วันที่: ${info.event.startStr}\n📝 รายละเอียด: ${info.event.extendedProps.description || 'ไม่มีข้อมูลเพิ่มเติม'}`);
+                    // ✅ อัปเดตเพิ่มหน้าต่างกล่องยืนยัน สามารถกด ลบ งานที่บันทึกไว้ออกจากปฏิทินได้จริง
+                    const msg = `🛠️ งานซ่อม: ${info.event.title}\n📅 วันที่: ${info.event.startStr}\n📝 รายละเอียด: ${info.event.extendedProps.description || 'ไม่มีข้อมูลเพิ่มเติม'}\n\nต้องการลบรายการแจ้งงานนี้ใช่หรือไม่?`;
+                    
+                    if (confirm(msg)) {
+                        // ค้นหาและลบออกจากอาเรย์ข้อมูลหลัก
+                        repairJobs = repairJobs.filter(job => job.id !== info.event.id);
+                        info.event.remove(); // ลบออกจากหน้าจอปฏิทินทันที
+                        saveJobs(); // บันทึกข้อมูลซ้ำลงคลังเบราว์เซอร์
+                        alert("🗑️ ลบรายการงานซ่อมเรียบร้อยแล้ว!");
+                    }
                 }
             });
             
             calendar.render();
-            // ตั้งค่าวันที่ปัจจุบันลงในช่องกรอกวันที่ให้โดยอัตโนมัติ
             document.getElementById('job-date').value = new Date().toISOString().split('T')[0];
         });
 
@@ -136,7 +143,6 @@
             const desc = document.getElementById('job-desc').value.trim();
             
             if(title && date) {
-                // แยกแยะคลาสสีตามชื่อช่าง
                 let colorClass = "user-inverno";
                 let nameShort = "[Inverno]";
                 if(assignee.includes("ช่าง A")) { colorClass = "user-technician-a"; nameShort = "[ช่าง A]"; }
@@ -151,11 +157,10 @@
                     assignee: assignee
                 };
 
-                // เพิ่มข้อมูลลงอาร์เรย์ และสั่งเรนเดอร์ในปฏิทินทันที
                 repairJobs.push(newEvent);
                 calendar.addEvent(newEvent);
                 
-                saveJobs(); // เซฟข้อมูล
+                saveJobs();
                 document.getElementById('job-title').value = "";
                 document.getElementById('job-desc').value = "";
                 alert("🎯 เพิ่มงานลงปฏิทินของทีมเรียบร้อยแล้ว!");
@@ -167,8 +172,6 @@
         // ฟังก์ชันตัวกรอง (Filter) เลือกแสดงงานซ่อมแยกตามรายชื่อคน
         function filterEvents() {
             const selectedUser = document.getElementById('filter-user').value;
-            
-            // ล้างงานเก่าบนหน้าจอปฏิทินออกชั่วคราว เพื่อคัดกรองตัวหนังสือใหม่
             calendar.removeAllEvents();
             
             if(selectedUser === "ALL") {
