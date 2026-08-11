@@ -3,130 +3,194 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>เกมงูสุดคลาสสิก</title>
+    <title>ระบบสต๊อกสินค้า & ใบวางบิล - By Inverno</title>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: sans-serif; }
-        body { background: #1e1e24; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; color: #fff; }
-        h1 { margin-bottom: 5px; font-size: 24px; color: #4caf50; }
+        /* CSS โครงสร้างและการจัดแต่งหน้าจอ */
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background: #f0f4f8; color: #333; padding: 25px; }
+        .main-header { text-align: center; margin-bottom: 25px; color: #003366; }
+        .container { max-width: 1200px; margin: 0 auto; display: grid; grid-template-columns: 1fr 1fr; gap: 25px; }
+        h2 { color: #003366; margin-bottom: 15px; border-bottom: 2px solid #0066cc; padding-bottom: 8px; font-size: 18px; }
+        .box { background: white; padding: 25px; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.06); }
         
-        /* เครดิต By inverno */
-        .credits { font-size: 14px; color: #00e1d9; font-weight: bold; letter-spacing: 1px; margin-bottom: 15px; text-transform: uppercase; }
+        /* ฟอร์ม อินพุต และปุ่มกด */
+        label { display: block; margin-top: 12px; font-weight: bold; font-size: 13px; color: #555; }
+        input, select { width: 100%; padding: 10px; margin-top: 5px; border: 1px solid #ccc; border-radius: 5px; font-size: 14px; }
+        button { background: #0066cc; color: white; border: none; padding: 12px; border-radius: 5px; cursor: pointer; font-weight: bold; margin-top: 15px; width: 100%; font-size: 14px; transition: 0.2s; }
+        button:hover { background: #004b99; }
+        .btn-orange { background: #ff9800; }
+        .btn-orange:hover { background: #e68a00; }
+        .btn-green { background: #2e7d32; }
+        .btn-green:hover { background: #1b5e20; }
+        .btn-del { background: #d32f2f; color: white; padding: 4px 8px; border-radius: 3px; font-size: 11px; cursor: pointer; width: auto; margin: 0; }
         
-        #score-board { font-size: 20px; margin-bottom: 15px; }
-        #game-container { position: relative; background: #111; border: 4px solid #4caf50; border-radius: 8px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-        canvas { display: block; background: #1a1a1a; }
-        
-        /* ปุ่มควบคุมสำหรับมือถือ */
-        .controls { display: grid; grid-template-columns: repeat(3, 60px); grid-template-rows: repeat(2, 60px); gap: 10px; margin-top: 20px; justify-content: center; }
-        .btn { background: #333; border: 2px solid #555; color: white; font-size: 20px; font-weight: bold; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; user-select: none; }
-        .btn:active { background: #4caf50; border-color: #fff; }
-        .up { grid-column: 2; }
-        .left { grid-column: 1; grid-row: 2; }
-        .down { grid-column: 2; grid-row: 2; }
-        .right { grid-column: 3; grid-row: 2; }
+        /* สไตล์ตาราง */
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 13px; }
+        th, td { border: 1px solid #e0e0e0; padding: 10px; text-align: left; }
+        th { background: #f5f7fa; color: #003366; font-weight: bold; }
+        .text-right { text-align: right; }
+
+        /* การออกแบบหน้าตาใบวางบิล */
+        .invoice-preview { background: #fff; border: 1px solid #ccc; padding: 40px; border-radius: 5px; box-shadow: 0 0 10px rgba(0,0,0,0.05); min-height: 500px; display: flex; flex-direction: column; justify-content: space-between; }
+        .inv-header { text-align: center; margin-bottom: 30px; line-height: 1.4; }
+        .inv-title { font-size: 24px; font-weight: bold; color: #003366; text-transform: uppercase; letter-spacing: 1px; }
+        .inv-meta { display: flex; justify-content: space-between; margin-bottom: 25px; font-size: 13px; background: #fafafa; padding: 12px; border-radius: 5px; }
+        .total-box { text-align: right; margin-top: 30px; font-size: 18px; font-weight: bold; color: #003366; border-top: 2px double #003366; padding-top: 10px; }
+
+        /* คำสั่งซ่อนส่วนควบคุมเมื่อกดสั่งพิมพ์พิมพ์กระดาษ (Print Layout) */
+        @media print {
+            body { background: white; padding: 0; }
+            .main-header, .controls-side, .btn-green { display: none !important; }
+            .container { grid-template-columns: 1fr; }
+            .invoice-preview { border: none; box-shadow: none; padding: 0; }
+            .btn-del-row { display: none !important; }
+        }
+        @media (max-width: 900px) { .container { grid-template-columns: 1fr; } }
     </style>
 </head>
 <body>
 
-    <h1>🐍 SNAKE GAME 🍎</h1>
-    <!-- เพิ่มข้อความเครดิตตรงนี้ -->
-    <p class="credits">By inverno</p>
-    
-    <div id="score-board">คะแนน: <span id="score">0</span></div>
-
-    <div id="game-container">
-        <canvas id="gameCanvas" width="400" height="400"></canvas>
+    <div class="main-header">
+        <h1>📦 ระบบจัดการสต๊อกสินค้า & ออกใบวางบิล</h1>
+        <p style="font-size: 14px; color: #666; margin-top: 5px;">พัฒนาและดูแลระบบโดย Inverno Cloud</p>
     </div>
 
-    <div class="controls">
-        <div class="btn up" onclick="changeDirection('UP')">▲</div>
-        <div class="btn left" onclick="changeDirection('LEFT')">◀</div>
-        <div class="btn down" onclick="changeDirection('DOWN')">▼</div>
-        <div class="btn right" onclick="changeDirection('RIGHT')">▶</div>
+    <div class="container">
+        <!-- ฝั่งซ้าย: แผงควบคุมระบบสต๊อกและการเรียกเก็บเงิน -->
+        <div class="box controls-side">
+            <h2>1. จัดการจำนวนคลังสินค้า (Inventory)</h2>
+            <form id="product-form">
+                <label>ชื่อสินค้า / รหัสสินค้า:</label>
+                <input type="text" id="prod-name" placeholder="เช่น สายแลน CAT6, บริการติดตั้ง Cloud" required>
+                <div style="display:flex; gap:10px;">
+                    <div style="flex:1;">
+                        <label>จำนวนสินค้ารับเข้า:</label>
+                        <input type="number" id="prod-qty" min="1" value="10" required>
+                    </div>
+                    <div style="flex:1;">
+                        <label>ราคาต่อหน่วย (บาท):</label>
+                        <input type="number" id="prod-price" min="0" value="150" required>
+                    </div>
+                </div>
+                <button type="button" onclick="addProduct()">➕ เพิ่มสินค้าเข้าคลัง</button>
+            </form>
+
+            <table id="inventory-table">
+                <thead>
+                    <tr>
+                        <th>ชื่อสินค้า</th>
+                        <th>คงเหลือ</th>
+                        <th>ราคา/หน่วย</th>
+                        <th>จัดการ</th>
+                    </tr>
+                </thead>
+                <tbody><!-- รายการคลังสินค้าแสดงตรงนี้ --></tbody>
+            </table>
+
+            <h2 style="margin-top: 35px;">2. ดึงรายการลงใบวางบิล</h2>
+            <label>ชื่อลูกค้า / ชื่อบริษัทผู้รับ:</label>
+            <input type="text" id="customer-name" value="บริษัท ลูกค้าตัวอย่าง จำกัด" oninput="updateUI()">
+            
+            <label>เลือกสินค้าจากสต๊อก:</label>
+            <select id="select-product"></select>
+            
+            <label>จำนวนที่ต้องการเปิดบิลขาย:</label>
+            <input type="number" id="bill-qty" min="1" value="1">
+            
+            <button type="button" class="btn-orange" onclick="addItemToBill()">🧾 บันทึกและดึงลงบิล</button>
+        </div>
+
+        <!-- ฝั่งขวา: หน้าเอกสารใบวางบิลสำหรับพิมพ์ส่งลูกค้า -->
+        <div>
+            <div class="invoice-preview" id="invoice">
+                <div>
+                    <div class="inv-header">
+                        <div class="inv-title">ใบวางบิล / ใบแจ้งหนี้</div>
+                        <p style="font-size:13px; color:#555; margin-top:5px;"><b>ผู้ส่ง:</b> Inverno Cloud Tech Solutions</p>
+                    </div>
+                    
+                    <div class="inv-meta">
+                        <div>
+                            <strong>เรียนลูกค้า:</strong> <span id="inv-customer">-</span>
+                        </div>
+                        <div>
+                            <strong>วันที่ออกเอกสาร:</strong> <span id="inv-date"></span>
+                        </div>
+                    </div>
+                    
+                    <table id="bill-table">
+                        <thead>
+                            <tr>
+                                <th>รายการสินค้า / รายละเอียด</th>
+                                <th class="text-right" style="width: 80px;">จำนวน</th>
+                                <th class="text-right" style="width: 100px;">หน่วยละ</th>
+                                <th class="text-right" style="width: 120px;">รวมเงิน (บาท)</th>
+                                <th class="btn-del-row" style="width: 50px;"></th>
+                            </tr>
+                        </thead>
+                        <tbody><!-- รายการเรียกเก็บเงินแสดงตรงนี้ --></tbody>
+                    </table>
+                </div>
+                
+                <div class="total-box">
+                    ยอดเงินรวมทั้งสิ้น: <span id="inv-total">0.00</span> บาท
+                </div>
+            </div>
+            <button class="btn-green" style="margin-top: 20px;" onclick="window.print()">🖨️ พิมพ์เอกสาร / บันทึกเป็น PDF</button>
+        </div>
     </div>
 
     <script>
-        const canvas = document.getElementById("gameCanvas");
-        const ctx = canvas.getContext("2d");
-        const scoreElement = document.getElementById("score");
+        // โหลดข้อมูลเก่าจากบราวเซอร์ ถ้าไม่มีให้ใช้ค่าเริ่มต้น
+        let inventory = JSON.parse(localStorage.getItem('inverno_stock')) || [
+            { name: "สายเชื่อมต่อเครือข่ายความเร็วสูง CAT6", qty: 100, price: 250 },
+            { name: "บริการติดตั้งและตั้งค่าเซิร์ฟเวอร์เสมือน", qty: 5, price: 5500 },
+            { name: "กล้องวงจรปิดพร้อมระบบบันทึกความปลอดภัย", qty: 15, price: 1200 }
+        ];
 
-        const gridSize = 20; 
-        const tileCount = canvas.width / gridSize;
+        let billItems = [];
 
-        let snake = [{ x: 10, y: 10 }];
-        let food = { x: 5, y: 5 };
-        let dx = 0;
-        let dy = 0;
-        let score = 0;
-        let gameInterval;
+        // แสดงวันที่ปัจจุบันเป็นรูปแบบไทย
+        document.getElementById('inv-date').innerText = new Date().toLocaleDateString('th-TH');
 
-        function startGame() {
-            dx = 1;
-            dy = 0;
-            score = 0;
-            scoreElement.innerText = score;
-            snake = [{ x: 10, y: 10 }];
-            generateFood();
-            if (gameInterval) clearInterval(gameInterval);
-            gameInterval = setInterval(updateGame, 150);
+        function saveData() {
+            localStorage.setItem('inverno_stock', JSON.stringify(inventory));
         }
 
-        function updateGame() {
-            const head = { x: snake[0].x + dx, y: snake[0].y + dy };
+        function updateUI() {
+            // 1. อัปเดตตารางและดรอปดาวน์สต๊อกสินค้า
+            const invBody = document.querySelector("#inventory-table tbody");
+            const selectProd = document.getElementById("select-product");
+            invBody.innerHTML = "";
+            selectProd.innerHTML = "";
 
-            if (head.x < 0 || head.x >= tileCount || head.y < 0 || head.y >= tileCount || checkCollision(head)) {
-                alert("เกมจบแล้ว! คะแนนของคุณคือ: " + score);
-                startGame();
-                return;
-            }
+            inventory.forEach((prod, index) => {
+                invBody.innerHTML += `
+                    <tr>
+                        <td>${prod.name}</td>
+                        <td><strong>${prod.qty}</strong></td>
+                        <td>${prod.price.toLocaleString()}</td>
+                        <td><button class="btn-del" onclick="deleteStockItem(${index})">ลบ</button></td>
+                    </tr>`;
+                
+                if(prod.qty > 0) {
+                    selectProd.innerHTML += `<option value="${index}">${prod.name} (เหลือ ${prod.qty})</option>`;
+                }
+            });
 
-            snake.unshift(head);
+            // 2. อัปเดตตารางในใบวางบิล
+            const billBody = document.querySelector("#bill-table tbody");
+            const customerName = document.getElementById("customer-name").value;
+            document.getElementById("inv-customer").innerText = customerName || "-";
+            
+            billBody.innerHTML = "";
+            let total = 0;
 
-            if (head.x === food.x && head.y === food.y) {
-                score += 10;
-                scoreElement.innerText = score;
-                generateFood();
-            } else {
-                snake.pop();
-            }
-
-            ctx.fillStyle = "#1a1a1a";
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-            ctx.fillStyle = "#4caf50";
-            snake.forEach(part => ctx.fillRect(part.x * gridSize, part.y * gridSize, gridSize - 2, gridSize - 2));
-
-            ctx.fillStyle = "#f44336";
-            ctx.fillRect(food.x * gridSize, food.y * gridSize, gridSize - 2, gridSize - 2);
-        }
-
-        function changeDirection(direction) {
-            if (direction === 'LEFT' && dx === 0) { dx = -1; dy = 0; }
-            if (direction === 'UP' && dy === 0) { dx = 0; dy = -1; }
-            if (direction === 'RIGHT' && dx === 0) { dx = 1; dy = 0; }
-            if (direction === 'DOWN' && dy === 0) { dx = 0; dy = 1; }
-        }
-
-        window.addEventListener("keydown", e => {
-            if (e.key === "ArrowLeft") changeDirection('LEFT');
-            if (e.key === "ArrowUp") changeDirection('UP');
-            if (e.key === "ArrowRight") changeDirection('RIGHT');
-            if (e.key === "ArrowDown") changeDirection('DOWN');
-        });
-
-        function generateFood() {
-            food.x = Math.floor(Math.random() * tileCount);
-            food.y = Math.floor(Math.random() * tileCount);
-            if (snake.some(part => part.x === food.x && part.y === food.y)) {
-                generateFood();
-            }
-        }
-
-        function checkCollision(head) {
-            return snake.some((part, index) => index !== 0 && part.x === head.x && part.y === head.y);
-        }
-
-        startGame();
-    </script>
-</body>
-</html>
+            billItems.forEach((item, index) => {
+                let rowTotal = item.qty * item.price;
+                total += rowTotal;
+                billBody.innerHTML += `
+                    <tr>
+                        <td>${item.name}</td>
+                        <td class="text-right">${item.qty}</td>
+                        <td class="text-right">${item.price.toLocaleString()}</td>
