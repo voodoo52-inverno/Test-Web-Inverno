@@ -7,7 +7,11 @@
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: sans-serif; }
         body { background: #1e1e24; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; color: #fff; }
-        h1 { margin-bottom: 10px; font-size: 24px; color: #4caf50; }
+        h1 { margin-bottom: 5px; font-size: 24px; color: #4caf50; }
+        
+        /* สไตล์ของเครดิต By inverno */
+        .credits { font-size: 14px; color: #00e1d9; font-weight: bold; letter-spacing: 1px; margin-bottom: 15px; text-transform: uppercase; }
+        
         #score-board { font-size: 20px; margin-bottom: 15px; }
         #game-container { position: relative; background: #111; border: 4px solid #4caf50; border-radius: 8px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
         canvas { display: block; background: #1a1a1a; }
@@ -25,14 +29,15 @@
 <body>
 
     <h1>🐍 SNAKE GAME 🍎</h1>
+    <!-- เพิ่มข้อความเครดิตตรงนี้ -->
+    <p class="credits">By inverno</p>
+    
     <div id="score-board">คะแนน: <span id="score">0</span></div>
 
     <div id="game-container">
-        <!-- กระดานเกม -->
         <canvas id="gameCanvas" width="400" height="400"></canvas>
     </div>
 
-    <!-- ปุ่มกดสำหรับคนเล่นบนมือถือ -->
     <div class="controls">
         <div class="btn up" onclick="changeDirection('UP')">▲</div>
         <div class="btn left" onclick="changeDirection('LEFT')">◀</div>
@@ -48,61 +53,53 @@
         const gridSize = 20; 
         const tileCount = canvas.width / gridSize;
 
-        let snake = [{ x: 10, y: 10 }]; // พิกัดเริ่มต้นของงู
-        let food = { x: 5, y: 5 }; // พิกัดอาหารลูกแรก
-        let dx = 0; // ทิศทางแนวนอน
-        let dy = 0; // ทิศทางแนวตั้ง
+        let snake = [{ x: 10, y: 10 }];
+        let food = { x: 5, y: 5 };
+        let dx = 0;
+        let dy = 0;
         let score = 0;
         let gameInterval;
 
-        // เริ่มต้นรันเกม
         function startGame() {
-            dx = 1; // ให้งูเดินขวาตอนเริ่มเกม
+            dx = 1;
             dy = 0;
             score = 0;
+            scoreElement.innerText = score;
             snake = [{ x: 10, y: 10 }];
             generateFood();
             if (gameInterval) clearInterval(gameInterval);
-            gameInterval = setInterval(updateGame, 150); // ความเร็วของงู (ยิ่งตัวเลขน้อย ยิ่งเร็ว)
+            gameInterval = setInterval(updateGame, 150);
         }
 
-        // ระบบคำนวณและวาดกราฟิก
         function updateGame() {
-            // 1. ขยับหัวงูไปข้างหน้า
             const head = { x: snake[0].x + dx, y: snake[0].y + dy };
 
-            // ชนกำแพงหรือชนตัวเอง = แพ้
             if (head.x < 0 || head.x >= tileCount || head.y < 0 || head.y >= tileCount || checkCollision(head)) {
                 alert("เกมจบแล้ว! คะแนนของคุณคือ: " + score);
                 startGame();
                 return;
             }
 
-            snake.unshift(head); // เพิ่มหัวใหม่เข้าไปข้างหน้า
+            snake.unshift(head);
 
-            // 2. ถ้างูกินอาหาร
             if (head.x === food.x && head.y === food.y) {
                 score += 10;
                 scoreElement.innerText = score;
-                generateFood(); // สุ่มอาหารใหม่
+                generateFood();
             } else {
-                snake.pop(); // ตัดหางงูออกถ้าไม่ได้กินอาหาร (เพื่อให้ยาวเท่าเดิม)
+                snake.pop();
             }
 
-            // 3. วาดภาพลงบนหน้าจอ
-            ctx.fillStyle = "#1a1a1a"; // เคลียร์หน้าจอเก่า
+            ctx.fillStyle = "#1a1a1a";
             ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-            // วาดตัวงู
             ctx.fillStyle = "#4caf50";
             snake.forEach(part => ctx.fillRect(part.x * gridSize, part.y * gridSize, gridSize - 2, gridSize - 2));
 
-            // วาดอาหาร
             ctx.fillStyle = "#f44336";
             ctx.fillRect(food.x * gridSize, food.y * gridSize, gridSize - 2, gridSize - 2);
         }
 
-        // ฟังก์ชันเปลี่ยนทิศทาง
         function changeDirection(direction) {
             if (direction === 'LEFT' && dx === 0) { dx = -1; dy = 0; }
             if (direction === 'UP' && dy === 0) { dx = 0; dy = -1; }
@@ -110,7 +107,6 @@
             if (direction === 'DOWN' && dy === 0) { dx = 0; dy = 1; }
         }
 
-        // ตรวจสอบการกดปุ่มบนคีย์บอร์ดคอมพิวเตอร์
         window.addEventListener("keydown", e => {
             if (e.key === "ArrowLeft") changeDirection('LEFT');
             if (e.key === "ArrowUp") changeDirection('UP');
@@ -118,7 +114,6 @@
             if (e.key === "ArrowDown") changeDirection('DOWN');
         });
 
-        // สุ่มจุดวางอาหารใหม่ที่ไม่ทับตัวงู
         function generateFood() {
             food.x = Math.floor(Math.random() * tileCount);
             food.y = Math.floor(Math.random() * tileCount);
@@ -127,12 +122,11 @@
             }
         }
 
-        // เช็กว่างูชนตัวเองไหม
         function checkCollision(head) {
             return snake.some((part, index) => index !== 0 && part.x === head.x && part.y === head.y);
         }
 
-        startGame(); // เปิดเว็บมาให้เริ่มเล่นทันที
+        startGame();
     </script>
 </body>
 </html>
