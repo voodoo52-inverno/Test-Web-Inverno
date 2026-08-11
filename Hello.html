@@ -3,171 +3,196 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ระบบใบเสนอราคา สไตล์ Odoo - By Inverno</title>
+    <title>ระบบแจ้งซ่อมและติดตามงาน - By Inverno</title>
     <style>
-        /* Odoo Modern Clean Style Concept */
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', 'Heebo', sans-serif; }
-        body { background: #f8f9fa; color: #444444; padding: 30px; font-size: 14px; }
-        .container { max-width: 1300px; margin: 0 auto; display: grid; grid-template-columns: 380px 1fr; gap: 30px; }
+        /* Modern Helpdesk Interface Concept (Odoo & Jira Style) */
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background: #f4f7fa; color: #333333; padding: 25px; font-size: 14px; }
+        .main-header { text-align: center; margin-bottom: 30px; color: #1a365d; }
+        .container { max-width: 1300px; margin: 0 auto; display: grid; grid-template-columns: 360px 1fr; gap: 25px; }
         
-        /* Left Panel - Odoo Studio Style Backend Controls */
-        .backend-panel { background: #ffffff; padding: 25px; border-radius: 6px; box-shadow: 0 1px 4px rgba(0,0,0,0.08); height: fit-content; border-top: 4px solid #714B67; }
-        h2 { color: #714B67; font-size: 18px; font-weight: 600; margin-bottom: 20px; padding-bottom: 10px; border-bottom: 1px solid #eee; }
-        label { display: block; margin-top: 12px; font-weight: 600; font-size: 12px; color: #666; text-transform: uppercase; }
-        input, select, textarea { width: 100%; padding: 8px 12px; margin-top: 5px; border: 1px solid #ccc; border-radius: 4px; font-size: 14px; color: #333; background: #fdfdfd; }
-        input:focus, select:focus { border-color: #714B67; outline: none; background: #fff; }
+        h2 { color: #1a365d; font-size: 16px; font-weight: 600; margin-bottom: 15px; border-bottom: 2px solid #2b6cb0; padding-bottom: 6px; }
+        .box { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); height: fit-content; }
         
-        /* Odoo Brand Buttons (Purple/Teal) */
-        button { background: #714B67; color: white; border: none; padding: 10px 15px; border-radius: 4px; cursor: pointer; font-weight: bold; margin-top: 15px; width: 100%; font-size: 14px; transition: background 0.2s; }
-        button:hover { background: #5a3b52; }
-        .btn-secondary { background: #00A09D; }
-        .btn-secondary:hover { background: #008784; }
-        .btn-danger { background: #dc3545; padding: 4px 8px; font-size: 12px; width: auto; margin: 0; }
+        /* สไตล์ฟอร์มกรอกข้อมูล */
+        label { display: block; margin-top: 10px; font-weight: 600; font-size: 12px; color: #4a5568; text-transform: uppercase; }
+        input, select, textarea { width: 100%; padding: 8px 12px; margin-top: 5px; border: 1px solid #cbd5e0; border-radius: 5px; font-size: 14px; background: #f8fafc; }
+        input:focus, select:focus, textarea:focus { border-color: #3182ce; outline: none; background: #fff; }
         
-        /* Right Panel - Odoo Standard Quotation Template (A4 Printable) */
-        .document-preview { background: #ffffff; padding: 50px; border-radius: 4px; box-shadow: 0 1px 10px rgba(0,0,0,0.05); min-height: 842px; display: flex; flex-direction: column; justify-content: space-between; border: 1px solid #e2e2e2; }
+        /* ปุ่มกด */
+        button { background: #3182ce; color: white; border: none; padding: 10px 15px; border-radius: 5px; cursor: pointer; font-weight: bold; margin-top: 15px; width: 100%; font-size: 14px; transition: 0.2s; }
+        button:hover { background: #2b6cb0; }
+        .btn-sm { width: auto; margin: 0 3px; padding: 4px 8px; font-size: 11px; font-weight: normal; border-radius: 3px; }
+        .btn-success { background: #38a169; } .btn-success:hover { background: #2f855a; }
+        .btn-danger { background: #e53e3e; } .btn-danger:hover { background: #c53030; }
         
-        /* Document Header */
-        .doc-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 40px; }
-        .company-logo-text { font-size: 26px; font-weight: bold; color: #714B67; line-height: 1.1; }
-        .company-details { text-align: right; font-size: 12px; color: #666; line-height: 1.5; }
+        /* ตารางและบอร์ดควบคุมสถานะ */
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; background: #fff; }
+        th, td { border: 1px solid #e2e8f0; padding: 12px 10px; text-align: left; }
+        th { background: #ebf8ff; color: #2b6cb0; font-weight: 600; }
         
-        .doc-title { font-size: 28px; font-weight: 500; color: #212529; margin-bottom: 25px; }
+        /* ป้ายกำกับความสำคัญและสถานะ (Badges) */
+        .badge { display: inline-block; padding: 3px 8px; border-radius: 12px; font-size: 11px; font-weight: bold; text-transform: uppercase; }
+        .priority-high { background: #fed7d7; color: #9b2c2c; }
+        .priority-medium { background: #feebc8; color: #9c4221; }
+        .priority-low { background: #edf2f7; color: #4a5568; }
         
-        /* Information Grid */
-        .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; margin-bottom: 40px; font-size: 14px; line-height: 1.6; }
-        .info-block h4 { color: #714B67; font-size: 13px; text-transform: uppercase; margin-bottom: 5px; border-bottom: 1px solid #eee; padding-bottom: 3px; }
-        
-        /* Odoo Elegant Table Style */
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-        th { border-bottom: 2px solid #666; padding: 12px 10px; text-align: left; font-weight: 600; color: #212529; font-size: 13px; }
-        td { border-bottom: 1px solid #e9ecef; padding: 12px 10px; color: #495057; }
-        tr:Last-child td { border-bottom: 2px solid #714B67; }
-        .text-right { text-align: right; }
-        
-        /* Summary Section */
-        .summary-container { display: flex; justify-content: flex-end; margin-top: 30px; }
-        .summary-table { width: 320px; }
-        .summary-table td { padding: 8px 10px; border: none; }
-        .summary-table tr.amount-total td { font-size: 18px; font-weight: bold; color: #714B67; border-top: 1px solid #dee2e6; }
-        
-        /* Payment Terms & Notes */
-        .doc-notes { margin-top: 50px; font-size: 12px; color: #777; line-height: 1.5; border-top: 1px dashed #eee; padding-top: 15px; }
-
-        /* Print Settings */
-        @media print {
-            body { background: white; padding: 0; }
-            .backend-panel { display: none !important; }
-            .container { grid-template-columns: 1fr; }
-            .document-preview { border: none; box-shadow: none; padding: 0; }
-            .btn-danger-col { display: none !important; }
-        }
+        .status-new { background: #ebf8ff; color: #2b6cb0; }
+        .status-process { background: #feebc8; color: #dd6b20; }
+        .status-done { background: #c6f6d5; color: #22543d; }
     </style>
 </head>
 <body>
 
+    <div class="main-header">
+        <h1>🛠️ ระบบแจ้งซ่อมและติดตามสถานะงานไอที</h1>
+        <p style="color: #4a5568; margin-top: 5px;">Inverno Service Desk & Maintenance Portal</p>
+    </div>
+
     <div class="container">
-        <!-- ฝั่งซ้าย: แผงกรอกข้อมูลหลังบ้าน (Odoo Style Input) -->
-        <div class="backend-panel">
-            <h2>Odoo Quotation Studio</h2>
-            
-            <label>เลขที่เอกสาร (Quotation #):</label>
-            <input type="text" id="doc-number" value="SO0001">
-            
-            <label>ชื่อลูกค้า / ที่อยู่บริษัทผู้รับ:</label>
-            <textarea id="customer-info" rows="3" oninput="updatePreview()">บริษัท ลูกค้าผู้มีอุปการะคุณ จำกัด&#10;123 ถนนสุขุมวิท แขวงคลองเตย&#10;เขตคลองเตย กรุงเทพฯ 10110</textarea>
-            
-            <label>เงื่อนไขการชำระเงิน (Payment Terms):</label>
-            <select id="payment-term" onchange="updatePreview()">
-                <option value="ชำระทันที (Immediate Payment)">ชำระทันที (Immediate Payment)</option>
-                <option value="เครดิต 15 วัน (15 Days)">เครดิต 15 วัน (15 Days)</option>
-                <option value="เครดิต 30 วัน (30 Days)" selected>เครดิต 30 วัน (30 Days)</option>
-                <option value="มัดจำ 50% ก่อนเริ่มงาน (50% Deposit)">มัดจำ 50% ก่อนเริ่มงาน</option>
-            </select>
-
-            <label>หมายเหตุท้ายบิล:</label>
-            <textarea id="doc-comment" rows="2" oninput="updatePreview()">สินค้ารับประกันระบบ 1 ปีเต็มตามเงื่อนไขบริษัท</textarea>
-
-            <h3 style="margin-top:25px; font-size:14px; color:#714B67;">➕ เพิ่มรายการสินค้า</h3>
-            <label>ชื่อสินค้า / บริละเอียด:</label>
-            <input type="text" id="item-desc" placeholder="เช่น บริการตั้งค่าระบบ Cloud Server">
-            
-            <div style="display:flex; gap:10px;">
-                <div style="flex:1;">
-                    <label>จำนวน (Qty):</label>
-                    <input type="number" id="item-qty" min="1" value="1">
-                </div>
-                <div style="flex:1;">
-                    <label>ราคา/หน่วย:</label>
-                    <input type="number" id="item-price" min="0" value="5000">
-                </div>
-            </div>
-            <button type="button" class="btn-secondary" onclick="addItem()">เพิ่มลงใบเสนอราคา</button>
-            
-            <button type="button" style="margin-top:30px; background:#212529;" onclick="window.print()">🖨️ พิมพ์เอกสาร / Save PDF</button>
+        <!-- ฝั่งซ้าย: ฟอร์มส่งข้อมูลแจ้งซ่อม (สำหรับพนักงาน/ผู้ใช้งาน) -->
+        <div class="box">
+            <h2>📝 ฟอร์มแจ้งซ่อม (New Ticket)</h2>
+            <form id="repair-form">
+                <label>ชื่อผู้แจ้งซ่อม / แผนก:</label>
+                <input type="text" id="reporter" placeholder="เช่น สมชาย (แผนกบัญชี)" required>
+                
+                <label>อุปกรณ์ / สินค้าที่ชำรุด:</label>
+                <input type="text" id="device" placeholder="เช่น เครื่องคอมพิวเตอร์ PC, เครื่องพิมพ์ HP" required>
+                
+                <label>ระดับความเร่งด่วน:</label>
+                <select id="priority">
+                    <option value="ต่ำ (Low)">ต่ำ (Low)</option>
+                    <option value="ปานกลาง (Medium)" selected>ปานกลาง (Medium)</option>
+                    <option value="สูงมาก (Critical)">สูงมาก (Critical)</option>
+                </select>
+                
+                <label>อาการเสีย / รายละเอียดปัญหา:</label>
+                <textarea id="issue-desc" rows="4" placeholder="กรุณาระบุอาการเสียอย่างละเอียด เช่น เปิดเครื่องติดแต่หน้าจอดำสนิท..." required></textarea>
+                
+                <button type="button" onclick="createTicket()">🚀 ส่งข้อมูลแจ้งซ่อม</button>
+            </form>
         </div>
 
-        <!-- ฝั่งขวา: หน้าเอกสารใบเสนอราคามาตรฐาน Odoo -->
-        <div class="document-preview" id="quotation-doc">
-            <div>
-                <!-- ส่วนหัวบริษัทผู้ส่ง -->
-                <div class="doc-header">
-                    <div>
-                        <div class="company-logo-text">Inverno Cloud</div>
-                        <p style="font-size:13px; color:#333; margin-top:5px;">Tech Solutions Expert</p>
-                    </div>
-                    <div class="company-details">
-                        <p><strong>บริษัท อินเวอโน คลาวด์ จำกัด</strong></p>
-                        <p>5/23 ถนนรังสิต-นครนายก 34/1 ต.ประชาธิปัตย์</p>
-                        <p>อ.ธัญบุรี ปทุมธานี 12130</p>
-                        <p>โทร: 064-613-8173 | Email: contact@inverno-cloud.com</p>
-                    </div>
-                </div>
+        <!-- ฝั่งขวา: ตารางมอนิเตอร์และอัปเดตสถานะงาน (สำหรับทีมช่าง/แอดมิน) -->
+        <div class="box">
+            <h2>📊 รายการติดตามและบริหารงานซ่อม (Repair Board)</h2>
+            <table id="tickets-table">
+                <thead>
+                    <tr>
+                        <th style="width: 70px;">รหัสงาน</th>
+                        <th style="width: 140px;">ผู้แจ้ง / อุปกรณ์</th>
+                        <th>รายละเอียดอาการเสีย</th>
+                        <th style="width: 100px;">ความเร่งด่วน</th>
+                        <th style="width: 120px;">สถานะปัจจุบัน</th>
+                        <th style="width: 160px;">การจัดการสำหรับช่าง</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- รายการใบแจ้งซ่อมจะโผล่ตรงนี้ -->
+                </tbody>
+            </table>
+        </div>
+    </div>
 
-                <!-- เลขที่เอกสาร -->
-                <div class="doc-title">ใบเสนอราคา / <span id="lbl-doc-number">SO0001</span></div>
+    <script>
+        // ระบบจำข้อมูลจำประวัติเก่าในเบราว์เซอร์ ถ้าไม่มีให้สร้างรายการตัวอย่าง
+        let tickets = JSON.parse(localStorage.getItem('inverno_tickets')) || [
+            { id: "REP0001", reporter: "นลินี (การตลาด)", device: "Printer ชั้น 2", priority: "ต่ำ (Low)", desc: "ปริ้นต์แล้วสีเพี้ยน มีเส้นสีดำคาดกลางกระดาษ", status: "รอดำเนินการ", date: "11/8/2026" },
+            { id: "REP0002", reporter: "กิตติพงษ์ (ไอที)", device: "Server Storage", priority: "สูงมาก (Critical)", desc: "มีไฟสีส้มเตือนที่ HDD ลูกที่ 3 ระบบคลาวด์ช้าลง", status: "กำลังซ่อม", date: "11/8/2026" }
+        ];
 
-                <!-- ข้อมูลการจัดส่งและเงื่อนไข -->
-                <div class="info-grid">
-                    <div class="info-block">
-                        <h4>ที่อยู่จัดส่งบิล (Customer Address)</h4>
-                        <div id="lbl-customer" style="white-space: pre-line;">-</div>
-                    </div>
-                    <div class="info-block">
-                        <h4>ข้อมูลเอกสาร (Details)</h4>
-                        <p><strong>วันที่เสนอราคา:</strong> <span id="lbl-date"></span></p>
-                        <p><strong>วันหมดอายุเอกสาร:</strong> <span id="lbl-exp-date"></span></p>
-                        <p><strong>เงื่อนไขชำระเงิน:</strong> <span id="lbl-payment">-</span></p>
-                    </div>
-                </div>
+        function saveTickets() {
+            localStorage.setItem('inverno_tickets', JSON.stringify(tickets));
+        }
 
-                <!-- ตารางรายการสินค้าสไตล์ Odoo Line Item -->
-                <table id="items-table">
-                    <thead>
-                        <tr>
-                            <th>รายละเอียดสินค้า (Description)</th>
-                            <th class="text-right" style="width: 80px;">จำนวน</th>
-                            <th class="text-right" style="width: 120px;">ราคาต่อหน่วย</th>
-                            <th class="text-right" style="width: 140px;">จำนวนเงิน</th>
-                            <th class="btn-danger-col" style="width: 60px;"></th>
-                        </tr>
-                    </thead>
-                    <tbody><!-- รายการจะเพิ่มที่นี่ --></tbody>
-                </table>
+        function updateBoard() {
+            const tbody = document.querySelector("#tickets-table tbody");
+            tbody.innerHTML = "";
 
-                <!-- สรุปผลรวมเงิน คำนวณ VAT 7% อัตโนมัติ -->
-                <div class="summary-container">
-                    <table class="summary-table">
-                        <tr>
-                            <td>รวมเป็นเงิน (Untaxed Amount):</td>
-                            <td class="text-right"><span id="val-subtotal">0.00</span> ฿</td>
-                        </tr>
-                        <tr>
-                            <td>ภาษีมูลค่าเพิ่ม VAT 7%:</td>
-                            <td class="text-right"><span id="val-vat">0.00</span> ฿</td>
-                        </tr>
-                        <tr class="amount-total">
-                            <td>ยอดรวมทั้งสิ้น (Total):</td>
-                            <td class="text-right"><span id="val-total">0.00</span> ฿</td>
-                        </tr>
-                    </table>
+            if(tickets.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:#999; padding:30px;">🎉 ยังไม่มีรายการแจ้งซ่อมในระบบขณะนี้</td></tr>`;
+                return;
+            }
+
+            tickets.forEach((ticket, index) => {
+                // กำหนดคลาสสีตามระดับความเร่งด่วน
+                let pClass = "priority-low";
+                if(ticket.priority.includes("Medium")) pClass = "priority-medium";
+                if(ticket.priority.includes("Critical")) pClass = "priority-high";
+
+                // กำหนดคลาสสีตามสถานะงาน
+                let sClass = "status-new";
+                if(ticket.status === "กำลังซ่อม") sClass = "status-process";
+                if(ticket.status === "ซ่อมเสร็จสิ้น") sClass = "status-done";
+
+                tbody.innerHTML += `
+                    <tr>
+                        <td><strong>${ticket.id}</strong><br><small style="color:#888;">${ticket.date}</small></td>
+                        <td><b>${ticket.reporter}</b><br><small style="color:#555;">${ticket.device}</small></td>
+                        <td>${ticket.desc}</td>
+                        <td><span class="badge ${pClass}">${ticket.priority}</span></td>
+                        <td><span class="badge ${sClass}">${ticket.status}</span></td>
+                        <td>
+                            ${ticket.status === "รอดำเนินการ" ? `<button class="btn-sm" onclick="changeStatus(${index}, 'กำลังซ่อม')">🔧 รับงาน</button>` : ''}
+                            ${ticket.status === "กำลังซ่อม" ? `<button class="btn-sm btn-success" onclick="changeStatus(${index}, 'ซ่อมเสร็จสิ้น')">✅ ปิดงาน</button>` : ''}
+                            <button class="btn-sm btn-danger" onclick="deleteTicket(${index})">🗑️ ลบ</button>
+                        </td>
+                    </tr>`;
+            });
+        }
+
+        // ฟังก์ชันสร้างและส่งรายการแจ้งซ่อมใหม่
+        function createTicket() {
+            const reporter = document.getElementById("reporter").value.trim();
+            const device = document.getElementById("device").value.trim();
+            const priority = document.getElementById("priority").value;
+            const desc = document.getElementById("issue-desc").value.trim();
+            
+            if(reporter && device && desc) {
+                // เจนรหัสงานซ่อมอัตโนมัติแบบรันนิ่งนัมเบอร์
+                const newId = "REP" + String(tickets.length + 1).padStart(4, '0');
+                const todayStr = new Date().toLocaleDateString('th-TH');
+
+                tickets.push({
+                    id: newId,
+                    reporter,
+                    device,
+                    priority,
+                    desc,
+                    status: "รอดำเนินการ",
+                    date: todayStr
+                });
+
+                // รีเซ็ตฟอร์มกรอกข้อมูล
+                document.getElementById("repair-form").reset();
+                
+                saveTickets();
+                updateBoard();
+                alert(`📋 ส่งข้อมูลแจ้งซ่อมสำเร็จ! รหัสงานของคุณคือ: ${newId}`);
+            } else {
+                alert("กรุณากรอกข้อมูลในฟอร์มแจ้งซ่อมให้ครบถ้วนก่อนส่งครับ");
+            }
+        }
+
+        // ฟังก์ชันเปลี่ยนสถานะงานของช่าง
+        function changeStatus(index, newStatus) {
+            tickets[index].status = newStatus;
+            saveTickets();
+            updateBoard();
+        }
+
+        // ฟังก์ชันลบใบงานซ่อม
+        function deleteTicket(index) {
+            if(confirm("คุณแน่ใจใช่ไหมที่จะลบประวัติงานแจ้งซ่อมรายการนี้?")) {
+                tickets.splice(index, 1);
+                saveTickets();
+                updateBoard();
+            }
+        }
+
+        // เริ่มต้นการทำงานระบบหน้าจอเมื่อเปิดหน้าเว็บ
+        updateBoard();
+    </script>
+</body>
+</html>
