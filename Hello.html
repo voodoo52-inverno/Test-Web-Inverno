@@ -3,196 +3,181 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ระบบแจ้งซ่อมและติดตามงาน - By Inverno</title>
+    <title>ระบบปฏิทินแจ้งงานซ่อมรายวัน - By Inverno</title>
+    
+    <!-- โหลดสไตล์และดีไซน์ของ FullCalendar และไอคอนภายนอก -->
+    <link href="https://jsdelivr.net" rel="stylesheet">
+    <script src="https://jsdelivr.net"></script>
+    
     <style>
-        /* Modern Helpdesk Interface Concept (Odoo & Jira Style) */
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-        body { background: #f4f7fa; color: #333333; padding: 25px; font-size: 14px; }
-        .main-header { text-align: center; margin-bottom: 30px; color: #1a365d; }
-        .container { max-width: 1300px; margin: 0 auto; display: grid; grid-template-columns: 360px 1fr; gap: 25px; }
+        /* สไตล์หน้าตาโปรแกรมโทนโมเดิร์นคลีน */
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
+        body { background: #f4f6f9; color: #333; padding: 25px; }
+        .header { text-align: center; margin-bottom: 25px; color: #1e3a8a; }
         
-        h2 { color: #1a365d; font-size: 16px; font-weight: 600; margin-bottom: 15px; border-bottom: 2px solid #2b6cb0; padding-bottom: 6px; }
-        .box { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); height: fit-content; }
+        /* เลย์เอาต์จัดวางแผงคีย์ข้อมูลฝั่งซ้าย และปฏิทินฝั่งขวา */
+        .main-layout { max-width: 1400px; margin: 0 auto; display: grid; grid-template-columns: 360px 1fr; gap: 25px; }
+        .box { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); height: fit-content; }
         
-        /* สไตล์ฟอร์มกรอกข้อมูล */
-        label { display: block; margin-top: 10px; font-weight: 600; font-size: 12px; color: #4a5568; text-transform: uppercase; }
-        input, select, textarea { width: 100%; padding: 8px 12px; margin-top: 5px; border: 1px solid #cbd5e0; border-radius: 5px; font-size: 14px; background: #f8fafc; }
-        input:focus, select:focus, textarea:focus { border-color: #3182ce; outline: none; background: #fff; }
+        /* ฟอร์มรับข้อมูล */
+        label { display: block; margin-top: 12px; font-weight: bold; font-size: 13px; color: #4b5563; }
+        input, select, textarea { width: 100%; padding: 10px; margin-top: 5px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 14px; }
+        input:focus, select:focus, textarea:focus { border-color: #3b82f6; outline: none; }
         
-        /* ปุ่มกด */
-        button { background: #3182ce; color: white; border: none; padding: 10px 15px; border-radius: 5px; cursor: pointer; font-weight: bold; margin-top: 15px; width: 100%; font-size: 14px; transition: 0.2s; }
-        button:hover { background: #2b6cb0; }
-        .btn-sm { width: auto; margin: 0 3px; padding: 4px 8px; font-size: 11px; font-weight: normal; border-radius: 3px; }
-        .btn-success { background: #38a169; } .btn-success:hover { background: #2f855a; }
-        .btn-danger { background: #e53e3e; } .btn-danger:hover { background: #c53030; }
+        button { background: #1e3a8a; color: white; border: none; padding: 12px; border-radius: 6px; cursor: pointer; font-weight: bold; margin-top: 15px; width: 100%; font-size: 14px; transition: 0.2s; }
+        button:hover { background: #172554; }
         
-        /* ตารางและบอร์ดควบคุมสถานะ */
-        table { width: 100%; border-collapse: collapse; margin-top: 10px; background: #fff; }
-        th, td { border: 1px solid #e2e8f0; padding: 12px 10px; text-align: left; }
-        th { background: #ebf8ff; color: #2b6cb0; font-weight: 600; }
+        /* แถบตัวกรองเลือกรายชื่อช่าง (Filter) */
+        .filter-area { display: flex; align-items: center; justify-content: flex-end; gap: 10px; margin-bottom: 15px; background: white; padding: 10px 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.02); }
+        .filter-select { width: auto; margin: 0; padding: 6px 12px; }
+
+        /* สีประจำตัวช่างแต่ละคนบนปฏิทิน */
+        .user-inverno { background-color: #3b82f6 !important; border-color: #3b82f6 !important; } /* ฟ้า */
+        .user-technician-a { background-color: #10b981 !important; border-color: #10b981 !important; } /* เขียว */
+        .user-technician-b { background-color: #f59e0b !important; border-color: #f59e0b !important; } /* ส้ม */
         
-        /* ป้ายกำกับความสำคัญและสถานะ (Badges) */
-        .badge { display: inline-block; padding: 3px 8px; border-radius: 12px; font-size: 11px; font-weight: bold; text-transform: uppercase; }
-        .priority-high { background: #fed7d7; color: #9b2c2c; }
-        .priority-medium { background: #feebc8; color: #9c4221; }
-        .priority-low { background: #edf2f7; color: #4a5568; }
-        
-        .status-new { background: #ebf8ff; color: #2b6cb0; }
-        .status-process { background: #feebc8; color: #dd6b20; }
-        .status-done { background: #c6f6d5; color: #22543d; }
+        /* ปรับสไตล์ปฏิทินให้น่าใช้ */
+        #calendar { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+        .fc-event { cursor: pointer; padding: 2px 5px; font-size: 12px; border-radius: 4px; }
     </style>
 </head>
 <body>
 
-    <div class="main-header">
-        <h1>🛠️ ระบบแจ้งซ่อมและติดตามสถานะงานไอที</h1>
-        <p style="color: #4a5568; margin-top: 5px;">Inverno Service Desk & Maintenance Portal</p>
+    <div class="header">
+        <h1>📅 ระบบปฏิทินแจ้งงานซ่อมรายวัน (Team Calendar)</h1>
+        <p style="color: #64748b; margin-top: 5px;">จัดการคิวงานแจกจ่ายงานช่างรายบุคคล บันทึกข้อมูลปลอดภัยด้วย LocalStorage</p>
     </div>
 
-    <div class="container">
-        <!-- ฝั่งซ้าย: ฟอร์มส่งข้อมูลแจ้งซ่อม (สำหรับพนักงาน/ผู้ใช้งาน) -->
+    <!-- ตัวกรองเลือกดูงานของช่างรายคน -->
+    <div class="max-width: 1400px; margin: 0 auto;" style="max-width: 1400px; margin: 0 auto;">
+        <div class="filter-area">
+            <strong>🔍 ตัวกรองมุมมองงานซ่อม:</strong>
+            <select id="filter-user" class="filter-select" onchange="filterEvents()">
+                <option value="ALL">ดูงานของทุกคนในทีม (Show All)</option>
+                <option value="ช่างอินเวอโน (Inverno)">ช่างอินเวอโน (Inverno)</option>
+                <option value="ช่าง A (Somchai)">ช่าง A (Somchai)</option>
+                <option value="ช่าง B (Wichai)">ช่าง B (Wichai)</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="main-layout">
+        <!-- ฝั่งซ้าย: ฟอร์มจ่ายงานซ่อมใหม่ลงปฏิทิน -->
         <div class="box">
-            <h2>📝 ฟอร์มแจ้งซ่อม (New Ticket)</h2>
-            <form id="repair-form">
-                <label>ชื่อผู้แจ้งซ่อม / แผนก:</label>
-                <input type="text" id="reporter" placeholder="เช่น สมชาย (แผนกบัญชี)" required>
-                
-                <label>อุปกรณ์ / สินค้าที่ชำรุด:</label>
-                <input type="text" id="device" placeholder="เช่น เครื่องคอมพิวเตอร์ PC, เครื่องพิมพ์ HP" required>
-                
-                <label>ระดับความเร่งด่วน:</label>
-                <select id="priority">
-                    <option value="ต่ำ (Low)">ต่ำ (Low)</option>
-                    <option value="ปานกลาง (Medium)" selected>ปานกลาง (Medium)</option>
-                    <option value="สูงมาก (Critical)">สูงมาก (Critical)</option>
+            <h2 style="color: #1e3a8a; font-size: 16px; border-bottom: 2px solid #cbd5e1; padding-bottom: 8px;">📋 บันทึกสั่งจ่ายงานใหม่</h2>
+            <form id="job-form">
+                <label>ช่างผู้รับผิดชอบงาน:</label>
+                <select id="job-assignee">
+                    <option value="ช่างอินเวอโน (Inverno)">ช่างอินเวอโน (Inverno)</option>
+                    <option value="ช่าง A (Somchai)">ช่าง A (Somchai)</option>
+                    <option value="ช่าง B (Wichai)">ช่าง B (Wichai)</option>
                 </select>
                 
-                <label>อาการเสีย / รายละเอียดปัญหา:</label>
-                <textarea id="issue-desc" rows="4" placeholder="กรุณาระบุอาการเสียอย่างละเอียด เช่น เปิดเครื่องติดแต่หน้าจอดำสนิท..." required></textarea>
+                <label>หัวข้องาน / อุปกรณ์ที่ต้องซ่อม:</label>
+                <input type="text" id="job-title" placeholder="เช่น ซ่อมคอมพิวเตอร์เปิดไม่ติด, เช็กตู้แร็ค" required>
                 
-                <button type="button" onclick="createTicket()">🚀 ส่งข้อมูลแจ้งซ่อม</button>
+                <label>วันที่นัดเข้าดำเนินการ:</label>
+                <input type="date" id="job-date" required>
+                
+                <label>รายละเอียดปัญหาเพิ่มเติม:</label>
+                <textarea id="job-desc" rows="4" placeholder="ระบุเลขห้อง อาการชำรุด หรือเบอร์โทรติดต่อลูกค้า..."></textarea>
+                
+                <button type="button" onclick="createNewJob()">🚀 บันทึกลงปฏิทิน</button>
             </form>
         </div>
 
-        <!-- ฝั่งขวา: ตารางมอนิเตอร์และอัปเดตสถานะงาน (สำหรับทีมช่าง/แอดมิน) -->
-        <div class="box">
-            <h2>📊 รายการติดตามและบริหารงานซ่อม (Repair Board)</h2>
-            <table id="tickets-table">
-                <thead>
-                    <tr>
-                        <th style="width: 70px;">รหัสงาน</th>
-                        <th style="width: 140px;">ผู้แจ้ง / อุปกรณ์</th>
-                        <th>รายละเอียดอาการเสีย</th>
-                        <th style="width: 100px;">ความเร่งด่วน</th>
-                        <th style="width: 120px;">สถานะปัจจุบัน</th>
-                        <th style="width: 160px;">การจัดการสำหรับช่าง</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <!-- รายการใบแจ้งซ่อมจะโผล่ตรงนี้ -->
-                </tbody>
-            </table>
-        </div>
+        <!-- ฝั่งขวา: กระดานปฏิทินแสดงผล FullCalendar -->
+        <div id="calendar"></div>
     </div>
 
     <script>
-        // ระบบจำข้อมูลจำประวัติเก่าในเบราว์เซอร์ ถ้าไม่มีให้สร้างรายการตัวอย่าง
-        let tickets = JSON.parse(localStorage.getItem('inverno_tickets')) || [
-            { id: "REP0001", reporter: "นลินี (การตลาด)", device: "Printer ชั้น 2", priority: "ต่ำ (Low)", desc: "ปริ้นต์แล้วสีเพี้ยน มีเส้นสีดำคาดกลางกระดาษ", status: "รอดำเนินการ", date: "11/8/2026" },
-            { id: "REP0002", reporter: "กิตติพงษ์ (ไอที)", device: "Server Storage", priority: "สูงมาก (Critical)", desc: "มีไฟสีส้มเตือนที่ HDD ลูกที่ 3 ระบบคลาวด์ช้าลง", status: "กำลังซ่อม", date: "11/8/2026" }
+        let calendar;
+        
+        // ดึงประวัติงานเก่าจากเบราว์เซอร์ ถ้าไม่มีให้แสดงคิวงานตัวอย่าง
+        let repairJobs = JSON.parse(localStorage.getItem('inverno_calendar_jobs')) || [
+            { id: "1", title: "[Inverno] ย้ายระบบ Cloud Server", start: new Date().toISOString().split('T')[0], description: "ลูกค้าบจก.ตัวอย่าง นัดเวลา 10.00 น.", className: "user-inverno", assignee: "ช่างอินเวอโน (Inverno)" },
+            { id: "2", title: "[ช่าง A] ซ่อมสายแลนขาด ชั้น 3", start: new Date().toISOString().split('T')[0], description: "ห้องบัญชี แจ้งอินเทอร์เน็ตหลุดบ่อย", className: "user-technician-a", assignee: "ช่าง A (Somchai)" }
         ];
 
-        function saveTickets() {
-            localStorage.setItem('inverno_tickets', JSON.stringify(tickets));
-        }
-
-        function updateBoard() {
-            const tbody = document.querySelector("#tickets-table tbody");
-            tbody.innerHTML = "";
-
-            if(tickets.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:#999; padding:30px;">🎉 ยังไม่มีรายการแจ้งซ่อมในระบบขณะนี้</td></tr>`;
-                return;
-            }
-
-            tickets.forEach((ticket, index) => {
-                // กำหนดคลาสสีตามระดับความเร่งด่วน
-                let pClass = "priority-low";
-                if(ticket.priority.includes("Medium")) pClass = "priority-medium";
-                if(ticket.priority.includes("Critical")) pClass = "priority-high";
-
-                // กำหนดคลาสสีตามสถานะงาน
-                let sClass = "status-new";
-                if(ticket.status === "กำลังซ่อม") sClass = "status-process";
-                if(ticket.status === "ซ่อมเสร็จสิ้น") sClass = "status-done";
-
-                tbody.innerHTML += `
-                    <tr>
-                        <td><strong>${ticket.id}</strong><br><small style="color:#888;">${ticket.date}</small></td>
-                        <td><b>${ticket.reporter}</b><br><small style="color:#555;">${ticket.device}</small></td>
-                        <td>${ticket.desc}</td>
-                        <td><span class="badge ${pClass}">${ticket.priority}</span></td>
-                        <td><span class="badge ${sClass}">${ticket.status}</span></td>
-                        <td>
-                            ${ticket.status === "รอดำเนินการ" ? `<button class="btn-sm" onclick="changeStatus(${index}, 'กำลังซ่อม')">🔧 รับงาน</button>` : ''}
-                            ${ticket.status === "กำลังซ่อม" ? `<button class="btn-sm btn-success" onclick="changeStatus(${index}, 'ซ่อมเสร็จสิ้น')">✅ ปิดงาน</button>` : ''}
-                            <button class="btn-sm btn-danger" onclick="deleteTicket(${index})">🗑️ ลบ</button>
-                        </td>
-                    </tr>`;
-            });
-        }
-
-        // ฟังก์ชันสร้างและส่งรายการแจ้งซ่อมใหม่
-        function createTicket() {
-            const reporter = document.getElementById("reporter").value.trim();
-            const device = document.getElementById("device").value.trim();
-            const priority = document.getElementById("priority").value;
-            const desc = document.getElementById("issue-desc").value.trim();
+        // ตั้งค่าเริ่มต้นของปฏิทินเมื่อโหลดหน้าเว็บ
+        document.addEventListener('DOMContentLoaded', function() {
+            const calendarEl = document.getElementById('calendar');
             
-            if(reporter && device && desc) {
-                // เจนรหัสงานซ่อมอัตโนมัติแบบรันนิ่งนัมเบอร์
-                const newId = "REP" + String(tickets.length + 1).padStart(4, '0');
-                const todayStr = new Date().toLocaleDateString('th-TH');
+            calendar = new FullCalendar.Calendar(calendarEl, {
+                initialView: 'dayGridMonth', // แสดงผลแบบรายเดือนเป็นค่าแรกเริ่ม
+                headerToolbar: {
+                    left: 'prev,next today',
+                    center: 'title',
+                    right: 'dayGridMonth,timeGridWeek,listDay' // สลับดูรายเดือน รายสัปดาห์ หรือรายการงานประจำวันได้
+                },
+                locale: 'th', // ให้ปฏิทินแสดงผลข้อความภาษาไทย
+                events: repairJobs, // นำข้อมูลงานไปพล็อตลงตาราง
+                eventClick: function(info) {
+                    // เมื่อกดคลิกที่แถบงานในปฏิทิน จะเด้งแสดงรายละเอียด
+                    alert(`🛠️ งานซ่อม: ${info.event.title}\n📅 วันที่: ${info.event.startStr}\n📝 รายละเอียด: ${info.event.extendedProps.description || 'ไม่มีข้อมูลเพิ่มเติม'}`);
+                }
+            });
+            
+            calendar.render();
+            // ตั้งค่าวันที่ปัจจุบันลงในช่องกรอกวันที่ให้โดยอัตโนมัติ
+            document.getElementById('job-date').value = new Date().toISOString().split('T')[0];
+        });
 
-                tickets.push({
-                    id: newId,
-                    reporter,
-                    device,
-                    priority,
-                    desc,
-                    status: "รอดำเนินการ",
-                    date: todayStr
-                });
+        // ฟังก์ชันสั่งสำรองข้อมูลเก็บในเครื่อง
+        function saveJobs() {
+            localStorage.setItem('inverno_calendar_jobs', JSON.stringify(repairJobs));
+        }
 
-                // รีเซ็ตฟอร์มกรอกข้อมูล
-                document.getElementById("repair-form").reset();
+        // ฟังก์ชันกดบันทึกเพิ่มงานใหม่
+        function createNewJob() {
+            const assignee = document.getElementById('job-assignee').value;
+            const title = document.getElementById('job-title').value.trim();
+            const date = document.getElementById('job-date').value;
+            const desc = document.getElementById('job-desc').value.trim();
+            
+            if(title && date) {
+                // แยกแยะคลาสสีตามชื่อช่าง
+                let colorClass = "user-inverno";
+                let nameShort = "[Inverno]";
+                if(assignee.includes("ช่าง A")) { colorClass = "user-technician-a"; nameShort = "[ช่าง A]"; }
+                if(assignee.includes("ช่าง B")) { colorClass = "user-technician-b"; nameShort = "[ช่าง B]"; }
+
+                const newEvent = {
+                    id: String(Date.now()),
+                    title: `${nameShort} ${title}`,
+                    start: date,
+                    description: desc,
+                    className: colorClass,
+                    assignee: assignee
+                };
+
+                // เพิ่มข้อมูลลงอาร์เรย์ และสั่งเรนเดอร์ในปฏิทินทันที
+                repairJobs.push(newEvent);
+                calendar.addEvent(newEvent);
                 
-                saveTickets();
-                updateBoard();
-                alert(`📋 ส่งข้อมูลแจ้งซ่อมสำเร็จ! รหัสงานของคุณคือ: ${newId}`);
+                saveJobs(); // เซฟข้อมูล
+                document.getElementById('job-title').value = "";
+                document.getElementById('job-desc').value = "";
+                alert("🎯 เพิ่มงานลงปฏิทินของทีมเรียบร้อยแล้ว!");
             } else {
-                alert("กรุณากรอกข้อมูลในฟอร์มแจ้งซ่อมให้ครบถ้วนก่อนส่งครับ");
+                alert("กรุณากรอกหัวข้องานและเลือกวันที่เข้าซ่อมก่อนครับ");
             }
         }
 
-        // ฟังก์ชันเปลี่ยนสถานะงานของช่าง
-        function changeStatus(index, newStatus) {
-            tickets[index].status = newStatus;
-            saveTickets();
-            updateBoard();
-        }
-
-        // ฟังก์ชันลบใบงานซ่อม
-        function deleteTicket(index) {
-            if(confirm("คุณแน่ใจใช่ไหมที่จะลบประวัติงานแจ้งซ่อมรายการนี้?")) {
-                tickets.splice(index, 1);
-                saveTickets();
-                updateBoard();
+        // ฟังก์ชันตัวกรอง (Filter) เลือกแสดงงานซ่อมแยกตามรายชื่อคน
+        function filterEvents() {
+            const selectedUser = document.getElementById('filter-user').value;
+            
+            // ล้างงานเก่าบนหน้าจอปฏิทินออกชั่วคราว เพื่อคัดกรองตัวหนังสือใหม่
+            calendar.removeAllEvents();
+            
+            if(selectedUser === "ALL") {
+                calendar.addEventSource(repairJobs);
+            } else {
+                const filtered = repairJobs.filter(job => job.assignee === selectedUser);
+                calendar.addEventSource(filtered);
             }
         }
-
-        // เริ่มต้นการทำงานระบบหน้าจอเมื่อเปิดหน้าเว็บ
-        updateBoard();
     </script>
 </body>
 </html>
